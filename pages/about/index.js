@@ -797,148 +797,148 @@ document.addEventListener('DOMContentLoaded', event => {
 
 		// 	render.mouse = mouse
 		// }
-		const {
-			Engine,
-			Render,
-			Runner,
-			Bodies,
-			Body,
-			World,
-			Mouse,
-			MouseConstraint,
-			Events,
-		} = Matter
+		document.addEventListener('DOMContentLoaded', () => {
+		  const {
+		    Engine,
+		    Render,
+		    Runner,
+		    Bodies,
+		    Body,
+		    World,
+		    Mouse,
+		    MouseConstraint,
+		    Events,
+		  } = Matter;
 		
-		const engine = Engine.create()
-		engine.gravity.y = 0.02
-		const world = engine.world
+		  const engine = Engine.create();
+		  engine.gravity.y = 1; // Естественная гравитация
 		
-		const canvasWrapper = document.getElementById('canvas_wrapper')
+		  const world = engine.world;
 		
-		const render = Render.create({
-			element: canvasWrapper,
-			engine: engine,
-			options: {
-				width: canvasWrapper.offsetWidth,
-				height: canvasWrapper.offsetHeight,
-				wireframes: false,
-				background: 'transparent',
-			},
-		})
+		  const canvasWrapper = document.getElementById('canvas_wrapper2');
 		
-		Render.run(render)
-		const runner = Runner.create()
-		Runner.run(runner, engine)
+		  const render = Render.create({
+		    element: canvasWrapper,
+		    engine: engine,
+		    options: {
+		      width: canvasWrapper.offsetWidth,
+		      height: canvasWrapper.offsetHeight,
+		      wireframes: false,
+		      background: 'transparent',
+		    },
+		  });
 		
-		// Стены
-		const walls = [
-			Bodies.rectangle(canvasWrapper.offsetWidth / 2, -50, canvasWrapper.offsetWidth, 100, { isStatic: true }),
-			Bodies.rectangle(canvasWrapper.offsetWidth / 2, canvasWrapper.offsetHeight + 50, canvasWrapper.offsetWidth, 100, { isStatic: true }),
-			Bodies.rectangle(-50, canvasWrapper.offsetHeight / 2, 100, canvasWrapper.offsetHeight, { isStatic: true }),
-			Bodies.rectangle(canvasWrapper.offsetWidth + 50, canvasWrapper.offsetHeight / 2, 100, canvasWrapper.offsetHeight, { isStatic: true }),
-		]
-		World.add(world, walls)
+		  Render.run(render);
+		  const runner = Runner.create();
+		  Runner.run(runner, engine);
 		
-		// Элементы
-		const elements = document.querySelectorAll('.canvas-btn')
-		const wrapperRect = canvasWrapper.getBoundingClientRect()
-		const minSpeed = 0.15
-		const maxSpeed = 10
-		const finalFrictionAir = 0.002
-		const decayTime = 3000
-		const bodies = []
+		  // Стены
+		  const walls = [
+		    Bodies.rectangle(canvasWrapper.offsetWidth / 2, -50, canvasWrapper.offsetWidth, 100, { isStatic: true }),
+		    Bodies.rectangle(canvasWrapper.offsetWidth / 2, canvasWrapper.offsetHeight + 50, canvasWrapper.offsetWidth, 100, { isStatic: true }),
+		    Bodies.rectangle(-50, canvasWrapper.offsetHeight / 2, 100, canvasWrapper.offsetHeight, { isStatic: true }),
+		    Bodies.rectangle(canvasWrapper.offsetWidth + 50, canvasWrapper.offsetHeight / 2, 100, canvasWrapper.offsetHeight, { isStatic: true }),
+		  ];
+		  World.add(world, walls);
 		
-		elements.forEach(element => {
-			const rect = element.getBoundingClientRect()
+		  // Элементы
+		  const elements = document.querySelectorAll('.canvas-btn');
+		  const wrapperRect = canvasWrapper.getBoundingClientRect();
+		  const minSpeed = 0.15;
+		  const maxSpeed = 10;
+		  const finalFrictionAir = 0.002;
+		  const decayTime = 3000;
+		  const bodies = [];
 		
-			// === УСТАНАВЛИВАЕМ ФИКСИРОВАННЫЕ РАЗМЕРЫ ===
-			element.style.width = `${rect.width}px`
-			element.style.height = `${rect.height}px`
-			element.style.position = 'absolute'
-			element.style.overflow = 'hidden'
-			element.style.boxSizing = 'border-box'
-			element.style.pointerEvents = 'none' // для производительности и чистоты
-			element.style.willChange = 'transform'
-			element.style.transformOrigin = 'center center'
+		  elements.forEach(element => {
+		    const rect = element.getBoundingClientRect();
 		
-			// Позиция внутри wrapper
-			const x = Math.random() * (wrapperRect.width - rect.width) + rect.width / 2
-			const y = Math.random() * (wrapperRect.height - rect.height) + rect.height / 2
+		    // Фиксированные размеры и стили
+		    element.style.width = `${rect.width}px`;
+		    element.style.height = `${rect.height}px`;
+		    element.style.position = 'absolute';
+		    element.style.overflow = 'hidden';
+		    element.style.boxSizing = 'border-box';
+		    element.style.pointerEvents = 'none';
+		    element.style.willChange = 'transform';
+		    element.style.transformOrigin = 'center center';
 		
-			const body = Bodies.rectangle(x, y, rect.width, rect.height, {
-				restitution: 1,
-				friction: 0,
-				frictionAir: 0,
-				chamfer: { radius: 10 },
-				render: { fillStyle: 'transparent' },
-			})
+		    // Позиция внутри wrapper
+		    const x = Math.random() * (wrapperRect.width - rect.width) + rect.width / 2;
+		    const y = Math.random() * (wrapperRect.height - rect.height) + rect.height / 2;
 		
-			// Ограниченная начальная скорость
-			const vx = (Math.random() - 0.5) * maxSpeed
-			const vy = (Math.random() - 0.5) * maxSpeed
-			Body.setVelocity(body, { x: vx, y: vy })
+		    const body = Bodies.rectangle(x, y, rect.width, rect.height, {
+		      restitution: 0.4, // Меньше отскоков
+		      friction: 0,
+		      frictionAir: 0,
+		      chamfer: { radius: 10 },
+		      render: { fillStyle: 'transparent' },
+		    });
 		
-			World.add(world, body)
-			bodies.push(body)
-		})
+		    // Начальная скорость только вниз
+		    const vx = 0;
+		    const vy = Math.random() * maxSpeed;
+		    Body.setVelocity(body, { x: vx, y: vy });
 		
-		// Единая синхронизация всех DOM-элементов
-		Events.on(engine, 'afterUpdate', () => {
-			elements.forEach((element, i) => {
-				const body = bodies[i]
-				element.style.left = `${body.position.x}px`
-				element.style.top = `${body.position.y}px`
-				element.style.transform = `translate(-50%, -50%) rotate(${body.angle}rad)`
-			})
-		})
+		    World.add(world, body);
+		    bodies.push(body);
+		  });
 		
-		// Плавное замедление с минимальным движением
-		let decayActive = false
-		function startDecay() {
-			if (decayActive) return
-			decayActive = true
-			const start = Date.now()
+		  // Синхронизация DOM-элементов с физикой
+		  Events.on(engine, 'afterUpdate', () => {
+		    elements.forEach((element, i) => {
+		      const body = bodies[i];
+		      element.style.left = `${body.position.x}px`;
+		      element.style.top = `${body.position.y}px`;
+		      element.style.transform = `translate(-50%, -50%) rotate(${body.angle}rad)`;
+		    });
+		  });
 		
-			const interval = setInterval(() => {
-				const progress = Math.min((Date.now() - start) / decayTime, 1)
+		  // Плавное замедление (опционально, можно убрать если не требуется)
+		  let decayActive = false;
+		  function startDecay() {
+		    if (decayActive) return;
+		    decayActive = true;
+		    const start = Date.now();
 		
-				bodies.forEach(body => {
-					body.frictionAir = finalFrictionAir * progress
+		    const interval = setInterval(() => {
+		      const progress = Math.min((Date.now() - start) / decayTime, 1);
 		
-					const speed = Math.sqrt(body.velocity.x ** 2 + body.velocity.y ** 2)
-					if (speed < minSpeed) {
-						body.frictionAir = 0
+		      bodies.forEach(body => {
+		        body.frictionAir = finalFrictionAir * progress;
 		
-						const vx = body.velocity.x === 0 ? (Math.random() > 0.5 ? minSpeed : -minSpeed) : body.velocity.x
-						const vy = body.velocity.y === 0 ? (Math.random() > 0.5 ? minSpeed : -minSpeed) : body.velocity.y
+		        const speed = Math.sqrt(body.velocity.x ** 2 + body.velocity.y ** 2);
+		        if (speed < minSpeed) {
+		          body.frictionAir = 0;
 		
-						Body.setVelocity(body, {
-							x: Math.abs(vx) < minSpeed ? (vx < 0 ? -minSpeed : minSpeed) : vx,
-							y: Math.abs(vy) < minSpeed ? (vy < 0 ? -minSpeed : minSpeed) : vy,
-						})
-					}
-				})
+		          const vx = body.velocity.x === 0 ? (Math.random() > 0.5 ? minSpeed : -minSpeed) : body.velocity.x;
+		          const vy = body.velocity.y === 0 ? (Math.random() > 0.5 ? minSpeed : -minSpeed) : body.velocity.y;
 		
-				if (progress === 1) {
-					clearInterval(interval)
-					decayActive = false
-				}
-			}, 100)
-		}
+		          Body.setVelocity(body, {
+		            x: Math.abs(vx) < minSpeed ? (vx < 0 ? -minSpeed : minSpeed) : vx,
+		            y: Math.abs(vy) < minSpeed ? (vy < 0 ? -minSpeed : minSpeed) : vy,
+		          });
+		        }
+		      });
 		
-		setTimeout(startDecay, 100)
+		      if (progress === 1) {
+		        clearInterval(interval);
+		        decayActive = false;
+		      }
+		    }, 100);
+		  }
 		
-		// Перетаскивание мышью
-		const mouse = Mouse.create(render.canvas)
-		const mouseConstraint = MouseConstraint.create(engine, {
-			mouse: mouse,
-			constraint: {
-				stiffness: 0.2,
-				render: { visible: false },
-			},
-		})
-		World.add(world, mouseConstraint)
-		render.mouse = mouse
-		}
-	}
-})
+		  setTimeout(startDecay, 100);
+		
+		  // Перетаскивание мышью
+		  const mouse = Mouse.create(render.canvas);
+		  const mouseConstraint = MouseConstraint.create(engine, {
+		    mouse: mouse,
+		    constraint: {
+		      stiffness: 0.2,
+		      render: { visible: false },
+		    },
+		  });
+		  World.add(world, mouseConstraint);
+		  render.mouse = mouse;
+		});
